@@ -3,10 +3,9 @@ var action = function(event){
     console.log(event)
 }
 var action2 = function(key){
+    console.log(square.style)
     var x = Number(square.style.top.substring(0,square.style.top - 2))
     var y = Number(square.style.left.substring(0,square.style.left - 2))
-    alert(x)
-    alert(y)
     if(key.key == "w"){
         y -= 1
     }
@@ -31,6 +30,8 @@ var square = document.createElement("area")
 
 square.style.backgroundColor = "rgb(198, 243, 247)"
 square.style.position = "absolute"
+square.style.top = "100px"
+square.style.left = "100px"
 document.body.append(square)
 square.textContent = "abcdefghi"
 
