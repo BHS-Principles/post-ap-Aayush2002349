@@ -1,0 +1,12 @@
+body{background-color: rgb(249, 181, 181)}
+
+body *{
+    display: inline-block;
+    position: relative;
+}
+
+.Card{
+    width: 10rem;
+    height: 15rem;
+    background-color:blue;
+}
