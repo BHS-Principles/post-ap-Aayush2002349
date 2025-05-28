@@ -65,8 +65,27 @@ var deepCopyCardList = function(cards){
     }
 }
 
+//Gets a random card
+var getRandomCard = function(allCards){
+    
+    var currentCard = allCards[Math.floor(Math.random()*allCards.length)];
+
+    var type = currentCard.type;
+    var numSelect = Math.floor(Math.random()*currentCard.num.length);
+    var num = currentCard.num[numSelect];
+    var str = currentCard.str[Math.floor(Math.random()*currentCard.str.length)];
+
+    var card = Card(type,num,str);
+
+    var cost = numSelect * currentCard.cost;
+    card.setCost(cost)
+    return card
+}
+
+var refresh
+
 var allCardsInDeck = createStartingCards(allCards);
 var discardedCards = [];
 var currentCard = null;
-var toDrawCards = [];
+var toDrawCards = deepCopyCardList(allCardsInDeck);
 var cardsInShop = [];

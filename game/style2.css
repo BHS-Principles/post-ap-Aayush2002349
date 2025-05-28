@@ -9,4 +9,7 @@ body *{
     width: 10rem;
     height: 15rem;
     background-color:blue;
+    background-image: url(Cards.jpg);
+    background-size: 1300%;
+    background-position: -100rem -45rem;
 }
