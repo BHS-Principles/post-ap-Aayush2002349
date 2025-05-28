@@ -1,13 +1,72 @@
 class Cards{
+
+    //Creates a card
     constructor(type,numVal,strVal){
         this.type = type
         this.num = numVal
         this.str = strVal
+        this.cost = null
+    }
+
+    //Sets the card's cost
+    setCost(cost){
+        this.cost = cost
+    }
+
+    //Deep copies a card
+    deepCopy(){
+        return {type:this.type, num:this.num, str:this.str, cost:this.cost}
     }
 }
 
-var allCardsInDeck = []
-var discardedCards = []
-var currentCard = null
-var toDrawCards = []
-var cardsInShop = []
+//Has all the cards
+var allCards = [
+    {
+        type:"num",
+        num:[2,3,4,5,6,7,8,9,10],
+        str:[null],
+        cost:2
+    },
+    {
+        type:"multPrev",
+        num:[2,3,4],
+        str:[null],
+        cost:10
+    },
+    {
+        type:"chance",
+        num:[0.1,0.25,0.5],
+        str:[null],
+        cost:5
+    },
+    {
+        type:"multNext",
+        num:[22,23,24,32,33,34,42,43,44],
+        str:[null],
+        cost:20
+    }
+];
+
+//Creates the starting deck
+var createStartingCards = function(allCards){
+    var cards = [];
+    var current = allCards[0];
+    for(var i = 0; i < current.num.length; i++){
+        cards.push(Cards(current.type,current.num[i],current.str[0]))
+    }
+    return cards;
+}
+
+//Deepcopies a list of cards
+var deepCopyCardList = function(cards){
+    var copiedCards = [];
+    for(var i = 0; i < cards.length; i++){
+        copiedCards.push(cards[i].deepCopy)
+    }
+}
+
+var allCardsInDeck = createStartingCards(allCards);
+var discardedCards = [];
+var currentCard = null;
+var toDrawCards = [];
+var cardsInShop = [];
