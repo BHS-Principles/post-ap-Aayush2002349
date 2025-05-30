@@ -2,20 +2,20 @@ class Cards{
 
     //Creates a card
     constructor(type,numVal,strVal){
-        this.type = type
-        this.num = numVal
-        this.str = strVal
-        this.cost = null
+        this.type = type;
+        this.num = numVal;
+        this.str = strVal;
+        this.cost = null;
     }
 
     //Sets the card's cost
     setCost(cost){
-        this.cost = cost
+        this.cost = cost;
     }
 
     //Deep copies a card
     deepCopy(){
-        return {type:this.type, num:this.num, str:this.str, cost:this.cost}
+        return {type:this.type, num:this.num, str:this.str, cost:this.cost};
     }
 }
 
@@ -52,7 +52,7 @@ var createStartingCards = function(allCards){
     var cards = [];
     var current = allCards[0];
     for(var i = 0; i < current.num.length; i++){
-        cards.push(Cards(current.type,current.num[i],current.str[0]))
+        cards.push(Cards(current.type,current.num[i],current.str[0]));
     }
     return cards;
 }
@@ -61,7 +61,7 @@ var createStartingCards = function(allCards){
 var deepCopyCardList = function(cards){
     var copiedCards = [];
     for(var i = 0; i < cards.length; i++){
-        copiedCards.push(cards[i].deepCopy)
+        copiedCards.push(cards[i].deepCopy);
     }
 }
 
@@ -78,14 +78,21 @@ var getRandomCard = function(allCards){
     var card = Card(type,num,str);
 
     var cost = numSelect * currentCard.cost;
-    card.setCost(cost)
-    return card
+    card.setCost(cost);
+    return card;
 }
 
-var refresh
+//Gets n random cards (which is used to refresh the shop)
+var refresh = function(allCards,num){
+    var cards = [];
+    for(var i = 0; i < num; i++){
+        appendItem(cards,getRandomCard(allCards));
+    }
+    return cards;
+};
 
 var allCardsInDeck = createStartingCards(allCards);
 var discardedCards = [];
 var currentCard = null;
 var toDrawCards = deepCopyCardList(allCardsInDeck);
-var cardsInShop = [];
+var cardsInShop = refresh(allCards,5);
