@@ -5,6 +5,10 @@ body *{
     position: relative;
 }
 
+#temp{
+    border: 10px solid;
+}
+
 .Card{
     width: 10rem;
     height: 15rem;

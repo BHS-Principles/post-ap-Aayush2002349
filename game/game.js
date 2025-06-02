@@ -1,10 +1,15 @@
+//If adding new card, add it to allCards, add it to card sheet, change scaling in css and add its card action to cardAction
+
+
+
 class Cards{
 
     //Creates a card
-    constructor(type,numVal,strVal){
+    constructor(type,numVal,strVal,index){
         this.type = type;
         this.num = numVal;
         this.str = strVal;
+        this.index = index;
         this.cost = null;
     }
 
@@ -54,7 +59,7 @@ var createStartingCards = function(allCards){
     var current = allCards[0];
 
     for(var i = 0; i < current.num.length; i++){
-        cards.push(new Cards(current.type,current.num[i],current.str[0]));
+        cards.push(new Cards(current.type,current.num[i],current.str[0],i));
     }
 
     
@@ -80,9 +85,9 @@ var getRandomCard = function(allCards){
     var num = currentCard.num[numSelect];
     var str = currentCard.str[Math.floor(Math.random()*currentCard.str.length)];
 
-    var card = new Cards(type,num,str);
+    var card = new Cards(type,num,str,numSelect);
 
-    var cost = numSelect * currentCard.cost;
+    var cost = (numSelect+1) * currentCard.cost;
     card.setCost(cost);
     return card;
 }
@@ -96,21 +101,77 @@ var refresh = function(allCards,num){
     return cards;
 };
 
+//Draw a random card
+var drawCard = function(currentCard,drawPile,discardPile,state){
+    //Reshuffle
+    if(drawPile.length == 0){
+        drawPile = discardPile
+        discardPile = []
+    }
+
+    //Manipulate cards
+    var drawnIndex = Math.floor(Math.random()*drawPile.length);
+    discardPile.push(currentCard)
+    currentCard = drawPile.pop(drawnIndex)
+    
+    //Does all the card actions
+}
+
+var cardAction(currentCard,state){
+    var points = 0
+
+    //All different cards and their behaviors
+    if(currentCard.type == "num"){
+        points = currentCard.num
+    }
+    if(currentCard.type == "multPrev"){
+        points = state.prev * currentCard.num
+    }
+    if(currentCard.type == "chance"){
+        if(Math.random() <= currentCard.num){
+            points = 5/currentCard.num
+        } else {
+            points = 0
+        }
+    }
+
+
+    //Reduces the turn timers on state calcs by one and multiplies points by each multiplier currently active
+    for(var i = 0; i < state.nextMults.length; i++){
+
+        points *= state.nextMults[i].num
+        
+        state.nextMults[i].turns -= 1
+        
+        if(state.nextMults[i].turns == 0){
+            state.nextMults.pop(i)
+            i -= 1
+        }
+    }
+
+    state.prev = points
+}
+
 var allCardsInDeck = createStartingCards(allCards);
-var discardedCards = [];
+var discardPile = [];
 var currentCard = null;
-var toDrawCards = deepCopyCardList(allCardsInDeck);
+var drawPile = deepCopyCardList(allCardsInDeck);
 var cardsInShop = refresh(allCards,5);
 
+var state = {
+    prevVal:0,
+    nextMults:[]
+}
 
 var temp = document.getElementById("temp");
 var target = document.getElementById("target")
 var cardDisplay = temp.querySelector(".Card");
 
-for(var i = 0; i < cardsInShop.length; i++){
+for(var i = 0; i < 52; i++){
     var currentCardDisplay = cardDisplay.cloneNode(true)
-
-    currentCardDisplay.innerHTML = cardsInShop[i].num
+    currentCardDisplay.style.backgroundPositionX = "" + 10*(i%13) + "rem"
+    currentCardDisplay.style.backgroundPositionY = "" + 15*(Math.floor(i/13))+ "rem"
+    currentCardDisplay.innerHTML = i
 
     target.append(currentCardDisplay)
 }
