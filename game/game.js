@@ -4,7 +4,7 @@
 
 class Cards{
 
-    //Creates a card
+    //There is currently nothing in the constructor because there are multiple ways to create a card
     constructor(){
     }
 
@@ -93,6 +93,26 @@ class Cards{
 
         target.append(card)
 
+    }
+}
+
+class Deck{
+    
+    //There are multiple ways to create a deck
+    constructor(){
+        this.cards = [];
+        this.drawPile = [];
+        this.current = null;
+        this.discardPile = [];
+    }
+    setStartingDeck(){
+    }
+    deepCopyCards(){
+        var copiedCards = [];
+        for(var i = 0; i < this.cards.length; i++){
+            copiedCards.push(this.cards[i].deepCopy);
+        }
+        return copiedCards;
     }
 }
 
