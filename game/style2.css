@@ -1,4 +1,4 @@
-body{background-color: rgb(249, 181, 181)}
+body{background-color: rgb(152, 255, 183)}
 
 body *{
     display: inline-block;
@@ -6,13 +6,12 @@ body *{
 }
 
 #temp{
-    border: 10px solid;
+    display:none;
 }
 
 .Card{
     width: 10rem;
     height: 15rem;
-    background-color:blue;
     background-image: url(Cards.png);
     background-size: 900%;
     background-position: 0rem 0rem;
