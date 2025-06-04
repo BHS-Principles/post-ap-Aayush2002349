@@ -13,7 +13,7 @@ body *{
     width: 10rem;
     height: 15rem;
     background-color:blue;
-    background-image: url(Cards.jpg);
-    background-size: 1300%;
+    background-image: url(Cards.png);
+    background-size: 900%;
     background-position: 0rem 0rem;
 }
