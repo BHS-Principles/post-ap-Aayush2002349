@@ -21,6 +21,7 @@ class Cards{
         }
     }
 
+    //Creates a random card
     makeRandomCard(allCards,maxPoints){
 
         //Gets a random kind of card
@@ -94,6 +95,46 @@ class Cards{
         target.append(card)
 
     }
+    //Gets points and state based on the card action
+    doCardAction(state){
+        var points = 0
+
+        //All different cards and their behaviors
+        if(this.type == "num"){
+            points = this.num
+        }
+        if(this.type == "multPrev"){
+            points = state.prev * this.num
+        }
+        if(this.type == "chance"){
+            if(Math.random() <= this.num){
+                points = 5/this.num
+            } else {
+                points = 0
+            }
+        }
+        if(currentCard.type == "multNext"){
+            state.nextMults.push({num: Math.floor(this.num / 10) , turns:1 + this.num % 10})
+        }
+
+
+        //Reduces the turn timers on state calcs by one and multiplies points by each multiplier currently active
+        for(var i = 0; i < state.nextMults.length; i++){
+
+            points *= state.nextMults[i].num
+            
+            state.nextMults[i].turns -= 1
+            
+            if(state.nextMults[i].turns == 0){
+                state.nextMults.pop(i)
+                i -= 1
+            }
+        }
+
+        state.prev = points
+
+        return {points:points,state:state}
+    }
 }
 
 class Deck{
@@ -104,15 +145,75 @@ class Deck{
         this.drawPile = [];
         this.current = null;
         this.discardPile = [];
+        this.state = {
+            prevVal:0,
+            nextMults:[]
+        }
     }
-    setStartingDeck(){
+
+    //Creates the starting deck of the player
+    setStartingDeck(allCards){
+
+        var cards = [];
+        var current = allCards[0];
+
+        for(var i = 0; i < current.num.length; i++){
+            var cardTemp = new Cards()
+            cardTemp.setInfo(false,current.type,current.num[i],current.str[0],i)
+            cards.push(cardTemp);
+        }
+
+        this.cards = cards
+        this.drawPile = this.deepCopyCards()
     }
+    
+    //Deep copies all the cards in deck.cards
     deepCopyCards(){
         var copiedCards = [];
         for(var i = 0; i < this.cards.length; i++){
             copiedCards.push(this.cards[i].deepCopy);
         }
         return copiedCards;
+    }
+
+    //Sets the deck to all random cards
+    setRandomCards(allCards,maxPoints,num){
+        var cards = [];
+        for(var i = 0; i < num; i++){
+
+            var cardTemp = new Cards()
+            cardTemp.makeRandomCard(allCards,maxPoints)
+
+            cards.push(cardTemp);
+        }
+        this.cards = cards
+        this.drawPile = this.deepCopyCards()
+    };
+
+    //Draws a card from the deck and does its action
+    drawCard(){
+        //Reshuffle
+        if(this.drawPile.length == 0){
+            this.discardPile.push(this.currentCard)
+            this.drawPile = this.discardPile
+            this.discardPile = []
+            this.currentCard = null
+        }
+
+        //Manipulate cards
+        if(this.currentCard != null){
+            this.discardPile.push(this.currentCard)
+        }
+        var drawnIndex = Math.floor(Math.random()*this.drawPile.length);
+        this.currentCard = this.drawPile.pop(drawnIndex)
+        
+        //Does all the card actions
+        var info = this.currentCard.doCardAction(this.state)
+
+        //Sets and returns information
+        this.state = info.state
+
+        return info.points
     }
 }
 
@@ -144,7 +245,7 @@ var allCards = [
     }
 ];
 
-//Creates the starting deck
+//Creates the starting deck (transferred into class)
 var createStartingCards = function(allCards){
 
     var cards = [];
@@ -161,7 +262,7 @@ var createStartingCards = function(allCards){
     return cards;
 }
 
-//Deepcopies a list of cards
+//Deepcopies a list of cards (transferred into class)
 var deepCopyCardList = function(cards){
     var copiedCards = [];
     for(var i = 0; i < cards.length; i++){
@@ -169,7 +270,7 @@ var deepCopyCardList = function(cards){
     }
 }
 
-//Gets n random cards (which is used to refresh the shop)
+//Gets n random cards (which is used to refresh the shop) (transferred into class)
 var refresh = function(allCards,maxPoints,num){
     var cards = [];
     for(var i = 0; i < num; i++){
@@ -182,7 +283,7 @@ var refresh = function(allCards,maxPoints,num){
     return cards;
 };
 
-//Draw a random card (everything is local)
+//Draw a random card (everything is local) (transferred into class)
 var drawCard = function(currentCard,drawPile,discardPile,state){
     //Reshuffle
     if(drawPile.length == 0){
@@ -201,6 +302,7 @@ var drawCard = function(currentCard,drawPile,discardPile,state){
     return {points:info.points,state:info.state,currentCard:currentCard,drawPile:drawPile,discardPile:discardPile}
 }
 
+//(transferred into class)
 var doCardAction = function(currentCard,state){
     var points = 0
 
@@ -241,7 +343,7 @@ var doCardAction = function(currentCard,state){
     return {points:points,state:state}
 }
 
-//Call this function every time a card is drawn, it will do all the math and display stuff
+//Call this function every time a card is drawn, it will do all the math and display stuff (this is not needed in the class)
 var onCardDraw = function(){
 
     //All the math is complete
@@ -254,6 +356,9 @@ var onCardDraw = function(){
     currentCard = info.currentCard
 }
 
+var deck = new Deck()
+var shop = new Deck()
+deck.setStartingDeck(allCards)
 
 var allCardsInDeck = createStartingCards(allCards);
 var discardPile = [];
