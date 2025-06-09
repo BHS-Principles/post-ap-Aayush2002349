@@ -1,4 +1,4 @@
-//If adding new card, add it to allCards, add it to card sheet, change scaling in css and add its card action to cardAction and draw, both its action and its position
+//If adding new card, add it to allCards in game class, add it to card sheet, change scaling in css and add its card action to cardAction and draw, both its action and its position
 
 
 
@@ -12,6 +12,7 @@ class Cards{
     setInfo(isBack,type,numVal,strVal,index){
         if(isBack){
             this.index = index;
+            this.type = type;
         } else {
             this.type = type;
             this.num = numVal;
@@ -66,6 +67,9 @@ class Cards{
         //Gets the card from the card sheet
         var xCard = 0;
         var yCard = 0;
+        if(this.type == "back"){
+            yCard = 0
+        }
         if(this.type == "num"){
             yCard = 1
         }
@@ -83,6 +87,7 @@ class Cards{
 
         //Creating the card
         var card = cardCopy.cloneNode(true)
+        this.cardElement = card;
 
         //Displays which card it is
         card.style.backgroundPositionX = "" + -10*xCard + "rem"
@@ -95,6 +100,10 @@ class Cards{
 
         target.append(card)
 
+    }
+
+    unDraw(){
+        this.cardElement.remove();
     }
     //Gets points and state based on the card action
     doCardAction(state){
@@ -154,7 +163,6 @@ class Deck{
 
     //Creates the starting deck of the player
     setStartingDeck(allCards){
-
         var cards = [];
         var current = allCards[0];
 
@@ -193,6 +201,7 @@ class Deck{
 
     //Draws a card from the deck and does its action
     drawCard(){
+        console.log(this.drawPile);
         //Reshuffle
         if(this.drawPile.length == 0){
             this.discardPile.push(this.currentCard)
@@ -206,6 +215,7 @@ class Deck{
             this.discardPile.push(this.currentCard)
         }
         var drawnIndex = Math.floor(Math.random()*this.drawPile.length);
+        console.log(drawnIndex);
         this.currentCard = this.drawPile.pop(drawnIndex)
         
         //Does all the card actions
@@ -217,57 +227,74 @@ class Deck{
         return info.points
     }
 }
-
-//Has all the cards
-var allCards = [
-    {
-        type:"num",
-        num:[2,3,4,5,6,7,8,9,10],
-        str:[""],
-        cost:2
-    },
-    {
-        type:"multPrev",
-        num:[2,3,4],
-        str:[""],
-        cost:10
-    },
-    {
-        type:"chance",
-        num:[0.1,0.25,0.5],
-        str:[""],
-        cost:5
-    },
-    {
-        type:"multNext",
-        num:[22,23,24,32,33,34,42,43,44],
-        str:[""],
-        cost:20
+class Game{
+    //Creates the game
+    constructor(type){
+        this.type = type
+        this.playerDeck = new Deck();
+        this.shop = new Deck();
+        this.points = 0
+        this.maxPoints = 0
+        if(type == "standard"){
+            this.createStandardGame()
+            this.displayStandardGame()
+        }
     }
-];
 
-//Testing stuff
+    createStandardGame(){
+        //Stores all possible types of cards
+        this.allCards = [
+            {
+                type:"num",
+                num:[2,3,4,5,6,7,8,9,10],
+                str:[""],
+                cost:2
+            },
+            {
+                type:"multPrev",
+                num:[2,3,4],
+                str:[""],
+                cost:10
+            },
+            {
+                type:"chance",
+                num:[0.1,0.25,0.5],
+                str:[""],
+                cost:5
+            },
+            {
+                type:"multNext",
+                num:[22,23,24,32,33,34,42,43,44],
+                str:[""],
+                cost:20
+            }
+        ];
+        this.playerDeck.setStartingDeck(this.allCards)
+        this.shop.setRandomCards(this.allCards,0,5)
+    }
+    displayStandardGame(){
+        this.drawPileDisplay = new Cards()
+        this.drawPileDisplay.setInfo(true,"back",null,null,1)
+        this.discardPileDisplay = new Cards()
+        this.discardPileDisplay.setInfo(true,"back",null,null,2)
+        this.drawPileDisplay.draw(0,0)
+        this.discardPileDisplay.draw(20,0)
+    }
+    doCardDraw(){
+        if(this.playerDeck.currentCard != null){
+            this.playerDeck.currentCard.unDraw()
+        }
 
-//Making sure things dont explode
-var deck = new Deck()
-var shop = new Deck()
-deck.setStartingDeck(allCards)
-shop.setRandomCards(allCards,0,5)
-
-var totalPoints = 0
-var maxPoints = 0
-
-//Testing card actions and manipulations
-var testing = new Deck()
-testing.setRandomCards(allCards,0,100)
-
-//(testing) calculating points and drawing cards
-for(var i = 0; i < testing.cards.length*2+1; i++){
-    console.log(testing.drawCard())
-    console.log(testing.currentCard)
+        var pointsGained = this.playerDeck.drawCard()
+        this.points += pointsGained
+        if(this.points > this.maxPoints){
+            this.maxPoints = this.points
+        }
+        this.playerDeck.currentCard.draw(10,0)
+    }
 }
 
-//(testing) Drawing cards onto the screen
-for(var i = 0; i < testing.cards.length; i++){
-    testing.cards[i].draw(10*(i%10),15*Math.floor(i/10))
+var game = new Game("standard");
+for(var i = 0; i < 4; i++){
+    game.doCardDraw()
 }
