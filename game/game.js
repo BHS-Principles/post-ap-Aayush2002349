@@ -6,6 +6,7 @@ class Cards{
 
     //There is currently nothing in the constructor because there are multiple ways to create a card
     constructor(){
+        this.cardElement = null
     }
 
     //Sets the info of the card
@@ -103,7 +104,9 @@ class Cards{
     }
 
     unDraw(){
-        this.cardElement.remove();
+        if(this.cardElement != null){
+            this.cardElement.remove();    
+        }
     }
     //Gets points and state based on the card action
     doCardAction(state){
@@ -155,10 +158,6 @@ class Deck{
         this.drawPile = [];
         this.current = null;
         this.discardPile = [];
-        this.state = {
-            prevVal:0,
-            nextMults:[]
-        }
     }
 
     //Creates the starting deck of the player
@@ -200,8 +199,7 @@ class Deck{
     };
 
     //Draws a card from the deck and does its action
-    drawCard(){
-        console.log(this.drawPile);
+    drawCard(state){
         //Reshuffle
         if(this.drawPile.length == 0){
             this.discardPile.push(this.currentCard)
@@ -215,16 +213,14 @@ class Deck{
             this.discardPile.push(this.currentCard)
         }
         var drawnIndex = Math.floor(Math.random()*this.drawPile.length);
-        console.log(drawnIndex);
-        this.currentCard = this.drawPile.pop(drawnIndex)
-        
+        this.currentCard = this.drawPile[drawnIndex]
+        this.drawPile.splice(drawnIndex,1)
         //Does all the card actions
-        var info = this.currentCard.doCardAction(this.state)
+        var info = this.currentCard.doCardAction(state)
 
-        //Sets and returns information
-        this.state = info.state
+        //Returns information
 
-        return info.points
+        return info
     }
 }
 class Game{
@@ -235,6 +231,10 @@ class Game{
         this.shop = new Deck();
         this.points = 0
         this.maxPoints = 0
+        this.state = {
+            prevVal:0,
+            nextMults:[]
+        }
         if(type == "standard"){
             this.createStandardGame()
             this.displayStandardGame()
@@ -273,28 +273,53 @@ class Game{
         this.shop.setRandomCards(this.allCards,0,5)
     }
     displayStandardGame(){
+
+        //Displays the draw pile
         this.drawPileDisplay = new Cards()
         this.drawPileDisplay.setInfo(true,"back",null,null,1)
-        this.discardPileDisplay = new Cards()
-        this.discardPileDisplay.setInfo(true,"back",null,null,2)
         this.drawPileDisplay.draw(0,0)
-        this.discardPileDisplay.draw(20,0)
     }
     doCardDraw(){
+
+        //Removes the previous card drawn
         if(this.playerDeck.currentCard != null){
             this.playerDeck.currentCard.unDraw()
         }
 
-        var pointsGained = this.playerDeck.drawCard()
-        this.points += pointsGained
+        //Draws a card and gets the info from drawing the card
+        var info = this.playerDeck.drawCard(this.state)
+        this.state = info.state
+        this.points += info.points
         if(this.points > this.maxPoints){
             this.maxPoints = this.points
         }
+
+        //Puts the drawn card onto the screen
         this.playerDeck.currentCard.draw(10,0)
+    }
+    updateShopDisplay(){
+        //Display the shop
+        for(var i = 0; i < this.shop.cards.length; i++){
+            this.shop.cards[i].unDraw()
+            this.shop.cards[i].draw(i*10,15)
+        }
+    }
+    updateDeckDisplay(){
+        for(var i = 0; i < this.playerDeck.cards.length; i++){
+            this.playerDeck.cards[i].unDraw()
+            this.playerDeck.cards[i].draw(10*(i%5),30+15*Math.floor(i/5))
+        }
+    }
+}
+class Player{
+    constructor(){
+        
     }
 }
 
 var game = new Game("standard");
-for(var i = 0; i < 4; i++){
-    game.doCardDraw()
+game.updateShopDisplay()
+game.updateDeckDisplay()
+for(var i = 0; i < 1; i++){
+    game.doCardDraw() 
 }
