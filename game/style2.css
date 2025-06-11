@@ -15,4 +15,5 @@ body *{
     background-image: url(Cards.png);
     background-size: 900%;
     background-position: 0rem 0rem;
+    text-align: center;
 }

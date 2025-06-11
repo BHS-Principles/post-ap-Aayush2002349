@@ -297,18 +297,32 @@ class Game{
         //Puts the drawn card onto the screen
         this.playerDeck.currentCard.draw(10,0)
     }
-    updateShopDisplay(){
-        //Display the shop
+    addShopDisplay(){
         for(var i = 0; i < this.shop.cards.length; i++){
-            this.shop.cards[i].unDraw()
             this.shop.cards[i].draw(i*10,15)
+            this.shop.cards[i].cardElement.innerHTML = this.shop.cards[i].cost
         }
     }
-    updateDeckDisplay(){
+    addDeckDisplay(){
         for(var i = 0; i < this.playerDeck.cards.length; i++){
-            this.playerDeck.cards[i].unDraw()
             this.playerDeck.cards[i].draw(10*(i%5),30+15*Math.floor(i/5))
         }
+    }
+    removeShopDisplay(){
+        for(var i = 0; i < this.shop.cards.length; i++){
+            this.shop.cards[i].unDraw()
+        }
+    }
+    removeDeckDisplay(){
+        for(var i = 0; i < this.playerDeck.cards.length; i++){
+            this.playerDeck.cards[i].unDraw()
+        }
+    }
+    removeAllDisplay(){
+        this.drawPileDisplay.unDraw()
+        this.playerDeck.currentCard.unDraw()
+        removeShopDisplay()
+        removeAllDisplay()
     }
 }
 class Player{
@@ -318,8 +332,8 @@ class Player{
 }
 
 var game = new Game("standard");
-game.updateShopDisplay()
-game.updateDeckDisplay()
+game.addShopDisplay()
+game.addDeckDisplay()
 for(var i = 0; i < 1; i++){
     game.doCardDraw() 
 }
