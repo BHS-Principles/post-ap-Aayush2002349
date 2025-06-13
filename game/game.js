@@ -151,25 +151,6 @@ class Cards{
 
         return {points:points,state:state}
     }
-    //Makes a card clickable
-    makeClickable(onClickFunct){
-        this.button = document.createElement("button")
-
-        //Puts where the button is on the screen
-        var xy = this.cardElement.getBoundingClientRect()
-
-
-        this.button.style.position = "absolute"
-        this.button.style.left = "0rem"
-        this.button.style.top = "0rem"
-        this.button.style.width = "10rem"
-        this.button.style.height = "15rem"
-        this.button.style.background = "red"
-
-        //Adds the onclick
-        this.button.addEventListener("click",onClickFunct)
-        console.log(this.button)
-    }
 }
 
 class Deck{
@@ -257,6 +238,7 @@ class Game{
             prevVal:0,
             nextMults:[]
         }
+        this.refreshCost = 10
         if(type == "standard"){
             this.createStandardGame()
             this.displayStandardGame()
@@ -297,7 +279,6 @@ class Game{
     doCardDraw(){
 
         //Removes the previous card drawn
-        console.log(this.playerDeck)
         if(this.playerDeck.currentCard != null){
             this.playerDeck.currentCard.unDraw()
         }
@@ -310,22 +291,36 @@ class Game{
             this.maxPoints = this.points
         }
 
-        //Puts the drawn card onto the screen
+        //Puts the drawn card and points onto the screen
         this.playerDeck.currentCard.draw(10,0)
+        this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
     }
     displayStandardGame(){
-
+        //Display the shop and deck
+        this.addShopDisplay()
+        this.addDeckDisplay()
         //Displays the draw pile
         this.drawPileDisplay = new Cards()
         this.drawPileDisplay.setInfo(true,"back",null,null,1)
         this.drawPileDisplay.draw(0,0)
-        this.doCardDraw()
         this.drawPileDisplay.cardElement.addEventListener("click",this.doCardDraw.bind(this))
+        //Displays the points display
+        this.pointsDisplay = new Cards()
+        this.pointsDisplay.setInfo(true,"back",null,null,0)
+        this.pointsDisplay.draw(20,0)
+        this.pointsDisplay.cardElement.innerHTML = "Points: 0"
+        //Displays the refresh display
+        this.refreshDisplay = new Cards()
+        this.refreshDisplay.setInfo(true,"back",null,null,3)
+        this.refreshDisplay.draw(30,0)
+        this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
+        this.refreshDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
     }
     addShopDisplay(){
         for(var i = 0; i < this.shop.cards.length; i++){
             this.shop.cards[i].draw(i*10,15)
-            this.shop.cards[i].cardElement.innerHTML = this.shop.cards[i].cost
+            this.shop.cards[i].cardElement.innerHTML = "Cost: " + this.shop.cards[i].cost
+            this.shop.cards[i].cardElement.addEventListener("click",this.doCardBuy.bind(this,this.shop.cards[i]))
         }
     }
     addDeckDisplay(){
@@ -349,6 +344,32 @@ class Game{
         removeShopDisplay()
         removeAllDisplay()
     }
+    refresh(){
+        this.removeShopDisplay()
+        this.shop.setRandomCards(this.allCards,this.maxPoints,5)
+        this.addShopDisplay()
+    }
+    doRefresh(){
+        if(this.points >= this.refreshCost){
+            this.points -= this.refreshCost
+            this.refreshCost = this.maxPoints
+            this.refresh()
+            this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
+            this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
+        }
+    }
+    doCardBuy(card){
+        if(card.cost <= this.points){
+            this.removeDeckDisplay()
+            this.points -= card.cost
+            this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
+            var cardCopy = card.deepCopy()
+            this.playerDeck.cards.push(cardCopy)
+            this.playerDeck.discardPile.push(cardCopy)
+            this.addDeckDisplay()
+            card.unDraw()
+        }
+    }
 }
 class Player{
     constructor(){
@@ -357,8 +378,3 @@ class Player{
 }
 
 var game = new Game("standard");
-game.addShopDisplay()
-game.addDeckDisplay()
-for(var i = 0; i < 3; i++){
-    game.doCardDraw() 
-}
