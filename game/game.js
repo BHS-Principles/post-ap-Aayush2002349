@@ -198,6 +198,7 @@ class Deck{
             cards.push(cardTemp);
         }
         this.cards = cards
+        this.cards = this.deepCopyCards()
         this.drawPile = this.deepCopyCards()
     };
 
@@ -205,7 +206,7 @@ class Deck{
     drawCard(state){
         //Reshuffle
         if(this.drawPile.length == 0){
-            this.discardPile.push(this.currentCard)
+            this.discardPile.push(this.currentCard.deepCopy())
             this.drawPile = this.discardPile
             this.discardPile = []
             this.currentCard = null
@@ -213,10 +214,10 @@ class Deck{
 
         //Manipulate cards
         if(this.currentCard != null){
-            this.discardPile.push(this.currentCard)
+            this.discardPile.push(this.currentCard.deepCopy())
         }
         var drawnIndex = Math.floor(Math.random()*this.drawPile.length);
-        this.currentCard = this.drawPile[drawnIndex]
+        this.currentCard = this.drawPile[drawnIndex].deepCopy()
         this.drawPile.splice(drawnIndex,1)
         //Does all the card actions
         var info = this.currentCard.doCardAction(state)
@@ -228,7 +229,7 @@ class Deck{
 }
 class Game{
     //Creates the game
-    constructor(type){
+    constructor(type,turns){
         this.type = type
         this.playerDeck = new Deck();
         this.shop = new Deck();
@@ -238,14 +239,15 @@ class Game{
             prevVal:0,
             nextMults:[]
         }
+        this.newGameReady = false
         this.refreshCost = 10
         if(type == "standard"){
-            this.createStandardGame()
+            this.createStandardGame(turns)
             this.displayStandardGame()
         }
     }
 
-    createStandardGame(){
+    createStandardGame(turns){
         //Stores all possible types of cards
         this.allCards = [
             {
@@ -275,25 +277,33 @@ class Game{
         ];
         this.playerDeck.setStartingDeck(this.allCards)
         this.shop.setRandomCards(this.allCards,0,5)
+        this.turnsLeft = turns
     }
     doCardDraw(){
+        if(this.turnsLeft > 0){
+            //Removes the previous card drawn
+            if(this.playerDeck.currentCard != null){
+                this.playerDeck.currentCard.unDraw()
+            }
 
-        //Removes the previous card drawn
-        if(this.playerDeck.currentCard != null){
-            this.playerDeck.currentCard.unDraw()
+            //Draws a card and gets the info from drawing the card
+            var info = this.playerDeck.drawCard(this.state)
+            this.state = info.state
+            this.points += info.points
+            if(this.points > this.maxPoints){
+                this.maxPoints = this.points
+            }
+
+            //Puts the drawn card and points onto the screen
+            this.playerDeck.currentCard.draw(10,0)
+            this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
+
+            //Decrements the turns and displays it
+            this.turnsLeft -= 1
+            this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
+        } else {
+            this.endStandardGame()
         }
-
-        //Draws a card and gets the info from drawing the card
-        var info = this.playerDeck.drawCard(this.state)
-        this.state = info.state
-        this.points += info.points
-        if(this.points > this.maxPoints){
-            this.maxPoints = this.points
-        }
-
-        //Puts the drawn card and points onto the screen
-        this.playerDeck.currentCard.draw(10,0)
-        this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
     }
     displayStandardGame(){
         //Display the shop and deck
@@ -315,6 +325,22 @@ class Game{
         this.refreshDisplay.draw(30,0)
         this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
         this.refreshDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
+        //Display the turns display
+        this.turnsDisplay = new Cards()
+        this.turnsDisplay.setInfo(true,"back",null,null,0)
+        this.turnsDisplay.draw(40,0)
+        this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
+    }
+    endStandardGame(){
+        this.removeAllDisplay()
+        this.pointsDisplay.draw(0,0)
+        this.pointsDisplay.cardElement.innerHTML = "Final Points: " + this.points
+        this.pointsDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
+        this.pointsDisplay.cardElement.addEventListener("click",this.resetStandardGame.bind(this))
+    }
+    resetStandardGame(){
+        this.removeAllDisplay()
+        this.newGameReady = true
     }
     addShopDisplay(){
         for(var i = 0; i < this.shop.cards.length; i++){
@@ -340,9 +366,12 @@ class Game{
     }
     removeAllDisplay(){
         this.drawPileDisplay.unDraw()
+        this.pointsDisplay.unDraw()
+        this.refreshDisplay.unDraw()
+        this.turnsDisplay.unDraw()
         this.playerDeck.currentCard.unDraw()
-        removeShopDisplay()
-        removeAllDisplay()
+        this.removeShopDisplay()
+        this.removeDeckDisplay()
     }
     refresh(){
         this.removeShopDisplay()
@@ -372,9 +401,13 @@ class Game{
     }
 }
 class Player{
-    constructor(){
+    constructor(type,turns){
+        this.playGame(type,turns)
+    }
+    playGame(type,turns){
+        this.game = new Game(type,turns);
         
     }
 }
 
-var game = new Game("standard");
+var player = new Player("standard",10);
