@@ -1,7 +1,5 @@
 //If adding new card, add it to allCards in game class, add it to card sheet, change scaling in css and add its card action to cardAction and draw, both its action and its position
 
-
-
 class Cards{
 
     //There is currently nothing in the constructor because there are multiple ways to create a card
