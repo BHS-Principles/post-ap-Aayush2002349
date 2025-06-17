@@ -11,6 +11,7 @@ class Cards{
 
     //Sets the info of the card
     setInfo(isBack,type,numVal,strVal,index){
+        //If the card is just for display only meaning it is the back of a card
         if(isBack){
             this.index = index;
             this.type = type;
@@ -108,9 +109,6 @@ class Cards{
         if(this.cardElement != null){
             this.cardElement.remove();    
         }
-        if(this.button != null){
-            this.button.remove();
-        }
     }
     //Gets points and state based on the card action
     doCardAction(state){
@@ -148,6 +146,7 @@ class Cards{
             }
         }
 
+        //Sets and returns the new state and points
         state.prev = points
 
         return {points:points,state:state}
@@ -165,15 +164,19 @@ class Deck{
 
     //Creates the starting deck of the player
     setStartingDeck(allCards){
+
+        //The starting deck is the number cards from 2-10 (number cards are at the first element of the allcards list)
         var cards = [];
         var current = allCards[0];
 
+        //Adds all of the 2-10 cards
         for(var i = 0; i < current.num.length; i++){
             var cardTemp = new Cards()
             cardTemp.setInfo(false,current.type,current.num[i],current.str[0],i)
             cards.push(cardTemp);
         }
 
+        //Sets those cards
         this.cards = cards
         this.drawPile = this.deepCopyCards()
     }
@@ -190,6 +193,8 @@ class Deck{
     //Sets the deck to all random cards
     setRandomCards(allCards,maxPoints,num){
         var cards = [];
+
+        //Cards class already can make a random card, so just do that a bunch of times to get a deck of random cards
         for(var i = 0; i < num; i++){
 
             var cardTemp = new Cards()
@@ -219,6 +224,7 @@ class Deck{
         var drawnIndex = Math.floor(Math.random()*this.drawPile.length);
         this.currentCard = this.drawPile[drawnIndex].deepCopy()
         this.drawPile.splice(drawnIndex,1)
+
         //Does all the card actions
         var info = this.currentCard.doCardAction(state)
 
@@ -276,6 +282,8 @@ class Game{
                 cost:20
             }
         ];
+
+        //Deck class already can set the starting deck
         this.playerDeck.setStartingDeck(this.allCards)
         this.shop.setRandomCards(this.allCards,0,5)
         this.turnsLeft = turns
@@ -283,25 +291,30 @@ class Game{
 
     //Displays all the elements for a standard card game
     displayStandardGame(){
+
         //Display the shop and deck
         this.addShopDisplay()
         this.addDeckDisplay()
+
         //Displays the draw pile
         this.drawPileDisplay = new Cards()
         this.drawPileDisplay.setInfo(true,"back",null,null,1)
         this.drawPileDisplay.draw(0,0)
         this.drawPileDisplay.cardElement.addEventListener("click",this.doCardDraw.bind(this))
+
         //Displays the points display
         this.pointsDisplay = new Cards()
         this.pointsDisplay.setInfo(true,"back",null,null,0)
         this.pointsDisplay.draw(20,0)
         this.pointsDisplay.cardElement.innerHTML = "Points: 0"
+
         //Displays the refresh display
         this.refreshDisplay = new Cards()
         this.refreshDisplay.setInfo(true,"back",null,null,3)
         this.refreshDisplay.draw(30,0)
         this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
         this.refreshDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
+
         //Display the turns display
         this.turnsDisplay = new Cards()
         this.turnsDisplay.setInfo(true,"back",null,null,0)
@@ -311,10 +324,13 @@ class Game{
 
     //Ends the standard game
     endStandardGame(){
+
+        //Remove the display
         this.removeAllDisplay()
+
+        //Draw the final points card
         this.pointsDisplay.draw(0,0)
         this.pointsDisplay.cardElement.innerHTML = "Final Points: " + this.points
-        this.pointsDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
         this.pointsDisplay.cardElement.addEventListener("click",this.resetStandardGame.bind(this))
     }
 
@@ -326,7 +342,10 @@ class Game{
 
     //Does the process of drawing a card
     doCardDraw(){
+
+        //Makes sure a card can be drawn
         if(this.turnsLeft > 0){
+
             //Removes the previous card drawn
             if(this.playerDeck.currentCard != null){
                 this.playerDeck.currentCard.unDraw()
@@ -347,7 +366,10 @@ class Game{
             //Decrements the turns and displays it
             this.turnsLeft -= 1
             this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
+
         } else {
+
+            //If there are no turns left the game has ended
             this.endStandardGame()
         }
     }
@@ -387,12 +409,20 @@ class Game{
 
     //Does all the logic behind whether or not the shop can be reset and resets it
     doRefresh(){
+
+        //Makes sure the shop can be refreshed
         if(this.points >= this.refreshCost){
+
+            //Removes the points and sets the new cost of refreshing the shop
             this.points -= this.refreshCost
             this.refreshCost = this.maxPoints
+
+            //Removes the old shop, gets a new one and draws the new shop
             this.removeShopDisplay()
             this.shop.setRandomCards(this.allCards,this.maxPoints,5)
             this.addShopDisplay()
+
+            //Shows the new cost and points after the refresh
             this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
             this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
         }
@@ -400,14 +430,27 @@ class Game{
 
     //Does all the logic to buy a card
     doCardBuy(card){
+
+        //Makes sure a card can be bought
         if(card.cost <= this.points){
+
+            //We need to take the card from the shop, undraw it and move that card internally to the deck and draw it onto the screen
+            //Removes the deck
             this.removeDeckDisplay()
+
+            //Manipulates the points
             this.points -= card.cost
             this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
+
+            //Moves the card from the shop to the discard pile
             var cardCopy = card.deepCopy()
             this.playerDeck.cards.push(cardCopy)
             this.playerDeck.discardPile.push(cardCopy)
+
+            //Shows the deck again
             this.addDeckDisplay()
+
+            //Stops showing the card shown in the shop
             card.unDraw()
         }
     }
@@ -424,6 +467,8 @@ class Player{
     //Plays the game
     playGame(type,turns){
         this.game = new Game(this.type,this.turns);
+
+        //Checks every 0.5 seconds if the game ended, if it has then start a new game
         setInterval(this.startNewGame.bind(this),500)
     }
 
@@ -435,4 +480,4 @@ class Player{
     }
 }
 
-var player = new Player("standard",100);
+var player = new Player("standard",10);
