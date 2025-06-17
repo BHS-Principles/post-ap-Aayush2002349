@@ -36,7 +36,7 @@ class Cards{
         var num = info.num[index];
         var str = info.str[Math.floor(Math.random()*info.str.length)];
 
-        var cost = Math.ceil(((index+1) * info.cost)/2) * Math.ceil((maxPoints + 1)/8);
+        var cost = Math.ceil(((index/3+1) * info.cost)/2) * Math.ceil((maxPoints + 1)/16);
 
         //Sets the card's properties
         this.setInfo(false,type,num,str,index);
@@ -402,12 +402,19 @@ class Game{
 }
 class Player{
     constructor(type,turns){
-        this.playGame(type,turns)
+        this.type = type
+        this.turns = turns
+        this.playGame()
     }
     playGame(type,turns){
-        this.game = new Game(type,turns);
-        
+        this.game = new Game(this.type,this.turns);
+        setInterval(this.startNewGame.bind(this),500)
+    }
+    startNewGame(){
+        if(this.game.newGameReady){
+            this.game = new Game(this.type,this.turns)
+        }
     }
 }
 
-var player = new Player("standard",10);
+var player = new Player("standard",100);
