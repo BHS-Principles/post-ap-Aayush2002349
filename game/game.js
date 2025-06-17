@@ -103,6 +103,7 @@ class Cards{
 
     }
 
+    //Removes the card from the screen
     unDraw(){
         if(this.cardElement != null){
             this.cardElement.remove();    
@@ -152,7 +153,6 @@ class Cards{
         return {points:points,state:state}
     }
 }
-
 class Deck{
     
     //There are multiple ways to create a deck
@@ -247,6 +247,7 @@ class Game{
         }
     }
 
+    //Creates a standard game
     createStandardGame(turns){
         //Stores all possible types of cards
         this.allCards = [
@@ -279,32 +280,8 @@ class Game{
         this.shop.setRandomCards(this.allCards,0,5)
         this.turnsLeft = turns
     }
-    doCardDraw(){
-        if(this.turnsLeft > 0){
-            //Removes the previous card drawn
-            if(this.playerDeck.currentCard != null){
-                this.playerDeck.currentCard.unDraw()
-            }
 
-            //Draws a card and gets the info from drawing the card
-            var info = this.playerDeck.drawCard(this.state)
-            this.state = info.state
-            this.points += info.points
-            if(this.points > this.maxPoints){
-                this.maxPoints = this.points
-            }
-
-            //Puts the drawn card and points onto the screen
-            this.playerDeck.currentCard.draw(10,0)
-            this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
-
-            //Decrements the turns and displays it
-            this.turnsLeft -= 1
-            this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
-        } else {
-            this.endStandardGame()
-        }
-    }
+    //Displays all the elements for a standard card game
     displayStandardGame(){
         //Display the shop and deck
         this.addShopDisplay()
@@ -331,6 +308,8 @@ class Game{
         this.turnsDisplay.draw(40,0)
         this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
     }
+
+    //Ends the standard game
     endStandardGame(){
         this.removeAllDisplay()
         this.pointsDisplay.draw(0,0)
@@ -338,10 +317,42 @@ class Game{
         this.pointsDisplay.cardElement.addEventListener("click",this.doRefresh.bind(this))
         this.pointsDisplay.cardElement.addEventListener("click",this.resetStandardGame.bind(this))
     }
+
+    //Allows the game to be reset (to start a new game create a new game object)
     resetStandardGame(){
         this.removeAllDisplay()
         this.newGameReady = true
     }
+
+    //Does the process of drawing a card
+    doCardDraw(){
+        if(this.turnsLeft > 0){
+            //Removes the previous card drawn
+            if(this.playerDeck.currentCard != null){
+                this.playerDeck.currentCard.unDraw()
+            }
+
+            //Draws a card and gets the info from drawing the card
+            var info = this.playerDeck.drawCard(this.state)
+            this.state = info.state
+            this.points += info.points
+            if(this.points > this.maxPoints){
+                this.maxPoints = this.points
+            }
+
+            //Puts the drawn card and points onto the screen
+            this.playerDeck.currentCard.draw(10,0)
+            this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
+
+            //Decrements the turns and displays it
+            this.turnsLeft -= 1
+            this.turnsDisplay.cardElement.innerHTML = "Turns: " + this.turnsLeft
+        } else {
+            this.endStandardGame()
+        }
+    }
+
+    //Adds and removes displays
     addShopDisplay(){
         for(var i = 0; i < this.shop.cards.length; i++){
             this.shop.cards[i].draw(i*10,15)
@@ -373,20 +384,21 @@ class Game{
         this.removeShopDisplay()
         this.removeDeckDisplay()
     }
-    refresh(){
-        this.removeShopDisplay()
-        this.shop.setRandomCards(this.allCards,this.maxPoints,5)
-        this.addShopDisplay()
-    }
+
+    //Does all the logic behind whether or not the shop can be reset and resets it
     doRefresh(){
         if(this.points >= this.refreshCost){
             this.points -= this.refreshCost
             this.refreshCost = this.maxPoints
-            this.refresh()
+            this.removeShopDisplay()
+            this.shop.setRandomCards(this.allCards,this.maxPoints,5)
+            this.addShopDisplay()
             this.refreshDisplay.cardElement.innerHTML = "Cost: " + this.refreshCost
             this.pointsDisplay.cardElement.innerHTML = "Points: " + this.points
         }
     }
+
+    //Does all the logic to buy a card
     doCardBuy(card){
         if(card.cost <= this.points){
             this.removeDeckDisplay()
@@ -401,15 +413,21 @@ class Game{
     }
 }
 class Player{
+
+    //Creates the game a player can play
     constructor(type,turns){
         this.type = type
         this.turns = turns
         this.playGame()
     }
+
+    //Plays the game
     playGame(type,turns){
         this.game = new Game(this.type,this.turns);
         setInterval(this.startNewGame.bind(this),500)
     }
+
+    //Starts a new game
     startNewGame(){
         if(this.game.newGameReady){
             this.game = new Game(this.type,this.turns)
