@@ -480,4 +480,4 @@ class Player{
     }
 }
 
-var player = new Player("standard",10);
+var player = new Player("standard",100);
